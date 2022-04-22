@@ -59,6 +59,7 @@
 
 <script>
 export default {
+  emits: ["onBack"],
   props: ["operator"],
   data() {
     return {
@@ -66,10 +67,8 @@ export default {
       operandLeft: null,
       operandRight: null,
       answers: [],
-      expectedAnswer: null,
     };
   },
-
   methods: {
     shuffle(a) {
     for (let i = a.length - 1; i > 0; i--) {
@@ -79,26 +78,22 @@ export default {
     return a;
     },
     selectAnswer(answerSelected) {
-      if (answerSelected !== this.expectedAnswer) {
+      if (answerSelected !== this.$store.state.expectedAnswer) {
         alert("WRONG ANSWER");
       }
       this.startQuiz();
     },
-
     startQuiz() {
       this.isQuizStarted = true;
       this.operandLeft = parseInt(Math.random() * 10);
       this.operandRight = parseInt(Math.random() * 30);
-
       const methods = {
         "+": (a, b) => a + b,
         "-": (a, b) => a - b,
         "/": (a, b) => a / b,
         "*": (a, b) => a * b,
       };
-
       const methodToUse = methods[this.operator];
-
       this.answers = [];
       this.answers.push(methodToUse(this.operandLeft, this.operandRight));
       this.answers.push(parseInt(Math.random() * 100));
@@ -107,10 +102,8 @@ export default {
       this.answers.push(parseInt(Math.random() * 100));
       this.answers = this.shuffle(this.answers)
       console.log(this.shuffle(this.answers))
-
-      const expectedAnswer = methodToUse(this.operandLeft, this.operandRight);
-
-      this.expectedAnswer = expectedAnswer;
+      this.$store.state.expectedAnswer = methodToUse(this.operandLeft, this.operandRight);
+      this.$store.state.expectedAnswer = this.$store.state.expectedAnswer;
     },
   },
 };
