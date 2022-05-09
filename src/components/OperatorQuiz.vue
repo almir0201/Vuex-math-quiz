@@ -1,31 +1,58 @@
 <template>
-  <div v-if="isQuizStarted">
-    <h4 class="flex justify-center w-full text-2xl text-bold text-blurry">
-      {{ operandLeft }} {{ operator }} {{ operandRight }}
-    </h4>
-    <button
-      @click="selectAnswer(answer)"
-      v-for="(answer, index) of answers"
-      :key="index"
-      class="
-        inline-flex
-        justify-center
-        items-center
-        p-2.5
-        w-40
-        mr-2.5
-        h-20
-        bg-btn-blue
-        text-2xl text-white
-        cursor-pointer
-      "
-    >
-      {{ answer }}
-    </button>
-  </div>
+  <transition
+    enter-active-class="duration-700 ease-out"
+    enter-from-class="transform opacity-0 scale-50"
+    enter-to-class="opacity-100 scale-100"
+    leave-active-class="duration-700 ease-in"
+    leave-from-class="opacity-100 scale-100"
+    leave-to-class="transform opacity-0 scale-50"
+    mode="out-in"
+  >
+    <div v-if="isQuizStarted" :key="step">
+      <h4
+        class="flex justify-center w-full text-2xl text-bold text-blurry mb-2"
+      >
+        {{ operandLeft }}
+        {{ operator }}
+        {{ operandRight }}
+      </h4>
+    </div>
+  </transition>
+  <transition
+    enter-active-class="duration-700 ease-out"
+    enter-from-class="transform opacity-0 scale-50"
+    enter-to-class="opacity-100 scale-100"
+    leave-active-class="duration-700 ease-in"
+    leave-from-class="opacity-100 scale-100"
+    leave-to-class="transform opacity-0 scale-50"
+    mode="out-in"
+  >
+    <div v-if="isQuizStarted" :key="step">
+      <button
+        @click="$store.dispatch('selectAnswer', answer)"
+        v-for="(answer, index) in answers"
+        :key="index"
+        class="
+          inline-flex
+          justify-center
+          items-center
+          p-2.5
+          w-40
+          mr-2.5
+          h-20
+          bg-btn-blue
+          text-2xl text-white
+          cursor-pointer
+        "
+      >
+        {{ answer }}
+      </button>
+    </div>
+  </transition>
+
   <div v-if="!isQuizStarted" class="flex justify-center p-2">
     <button
-      @click="startQuiz"
+      @click="$store.dispatch('beginQuiz')"
       class="
         p-2.5
         w-40
@@ -41,11 +68,15 @@
   </div>
   <div class="flex justify-center">
     <button
-      @click="$emit('onBack')"
+      @click="
+        $emit('onBack');
+        $store.dispatch('resetQuiz');
+      "
       class="
         p-2.5
         w-40
         mr-2.5
+        mt-2
         h-20
         bg-btn-blue
         text-2xl text-white
@@ -58,56 +89,32 @@
 </template>
 
 <script>
+import store from "../store";
+
 export default {
   emits: ["onBack"],
-  props: ["operator"],
-  data() {
-    return {
-      isQuizStarted: false,
-      operandLeft: null,
-      operandRight: null,
-      answers: [],
-    };
-  },
-  methods: {
-    shuffle(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
+  computed: {
+    questions() {
+      return store.getters.getQuestions;
     },
-    selectAnswer(answerSelected) {
-      if (answerSelected !== this.$store.state.expectedAnswer) {
-        alert("WRONG ANSWER");
-      }
-      this.startQuiz();
+    answers() {
+      return store.getters.getAnswers;
     },
-    startQuiz() {
-      this.isQuizStarted = true;
-      this.operandLeft = parseInt(Math.random() * 10);
-      this.operandRight = parseInt(Math.random() * 30);
-      const methods = {
-        "+": (a, b) => a + b,
-        "-": (a, b) => a - b,
-        "/": (a, b) => a / b,
-        "*": (a, b) => a * b,
-      };
-      const methodToUse = methods[this.operator];
-      this.answers = [];
-      this.answers.push(methodToUse(this.operandLeft, this.operandRight));
-      this.answers.push(parseInt(Math.random() * 100));
-      this.answers.push(parseInt(Math.random() * 100));
-      this.answers.push(parseInt(Math.random() * 100));
-      this.answers.push(parseInt(Math.random() * 100));
-      this.answers = this.shuffle(this.answers)
-      console.log(this.shuffle(this.answers))
-      this.$store.state.expectedAnswer = methodToUse(this.operandLeft, this.operandRight);
-      this.$store.state.expectedAnswer = this.$store.state.expectedAnswer;
+    operandLeft() {
+      return store.getters.getOperandLeft;
+    },
+    operandRight() {
+      return store.getters.getOperandRight;
+    },
+    operator() {
+      return store.getters.getOperator;
+    },
+    isQuizStarted() {
+      return store.getters.getIsQuizStarted;
+    },
+    step() {
+      return store.getters.getStep;
     },
   },
 };
 </script>
-
-<style>
-</style>
